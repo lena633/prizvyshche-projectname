@@ -33,3 +33,4 @@ ruff format .
 Запуск pre-commit:
 
 pre-commit run --all-files
+ програма робить круту нормалізацію бюджетних категорій
