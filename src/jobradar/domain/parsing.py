@@ -1,24 +1,28 @@
-from .models import Vacancy
+from .models import BudgetRow
 
 
-def normalize_title(raw: str) -> str:
+def normalize_name(raw: str) -> str:
+    if not raw or not raw.strip():
+        return ""
     return " ".join(raw.split()).lower()
 
 
-def parse_salary(raw: object) -> int | None:
+def parse_amount(raw: object) -> int | None:
     try:
+        if isinstance(raw, str):
+            raw = raw.replace(" ", "")
         return int(raw)
     except (TypeError, ValueError):
         return None
 
 
-def to_vacancy(row: dict) -> Vacancy | None:
-    title = row.get("title") or ""
-    if not title.strip():
+def to_budget_item(row: dict) -> BudgetRow | None:
+    name = row.get("name") or ""
+    if not name.strip():
         return None
-    return Vacancy(
-        title=normalize_title(title),
-        company=row.get("company", ""),
-        salary=parse_salary(row.get("salary")),
-        city=row.get("city", ""),
+    return BudgetRow(
+        code=str(row.get("code", "")).strip(),
+        name=normalize_name(name),
+        amount=parse_amount(row.get("amount")),
+        type=row.get("type", ""),
     )

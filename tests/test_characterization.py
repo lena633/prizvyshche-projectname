@@ -1,19 +1,42 @@
+import json
+import tempfile
 from pathlib import Path
-from jobradar.services.pipeline import load_vacancies
+from src.jobradar.services.pipeline import load_budget_data
 
 
-def test_modern_pipeline_output_is_stable():
-    base_path = Path(__file__).parent.parent
-    data_file = base_path / "data" / "vacancies.json"
+def test_refactored_pipeline_output_is_stable():
+    sample_data = [
+        {"code": "11010100", "name": " Tax 1 ", "amount": "4500000", "type": "income"},
+        {"code": "11010100", "name": "tax 1", "amount": "4500000", "type": "income"},
+        {"code": "", "name": "Tax 2", "amount": "1200000", "type": "income"},
+        {"code": "18050400", "name": "Tax 3", "amount": "undefined", "type": "income"},
+        {"code": "0110150", "name": "Expense 1", "amount": "850000", "type": "expense"},
+        {
+            "code": "0111010",
+            "name": "Expense 2 (Kindergartens)",
+            "amount": "3200000",
+            "type": "expense",
+        },
+        {"code": "0111020", "name": "Expense 3 (Schools)", "amount": "7400000", "type": "expense"},
+        {"code": "0111020", "name": "expense 3 (schools)", "amount": "7400000", "type": "expense"},
+        {"code": "0114060", "name": "", "amount": "150000", "type": "expense"},
+        {"code": "0116030", "name": "Expense 4", "amount": "in progress", "type": "expense"},
+        {"code": "0117310", "name": "Expense 5 (Objects)", "amount": "2100000", "type": "expense"},
+        {"code": "0118110", "name": "Expense 6", "amount": "450000", "type": "expense"},
+    ]
 
-    vacancies = load_vacancies(data_file)
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as tmp:
+        json.dump(sample_data, tmp, ensure_ascii=False)
+        tmp_path = Path(tmp.name)
 
-    assert len(vacancies) == 2
+    try:
+        rows = load_budget_data(tmp_path)
 
-    # Проверяем первый элемент (Python Developer)
-    assert vacancies[0].title == "python developer"
-    assert vacancies[0].salary == 1500
-
-    # Проверяем второй элемент (Data Analyst)
-    assert vacancies[1].title == "data analyst"
-    assert vacancies[1].salary is None  # нечисловая зарплата теперь None
+        assert len(rows) == 9
+        assert rows[0].name == "tax 1"
+        assert rows[0].amount == 4500000
+        assert rows[2].amount is None
+    finally:
+        tmp_path.unlink(missing_ok=True)

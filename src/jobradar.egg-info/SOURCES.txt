@@ -8,5 +8,9 @@ src/jobradar.egg-info/dependency_links.txt
 src/jobradar.egg-info/entry_points.txt
 src/jobradar.egg-info/requires.txt
 src/jobradar.egg-info/top_level.txt
+src/jobradar/domain/models.py
+src/jobradar/domain/parsing.py
 src/jobradar/domain/text.py
+src/jobradar/services/pipeline.py
+src/jobradar/sources/json_file.py
 tests/test_characterization.py

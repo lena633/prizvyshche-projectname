@@ -2,12 +2,13 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class Vacancy:
-    title: str
-    company: str
-    salary: int | None
-    city: str
+class BudgetRow:
+    code: str
+    name: str
+    amount: int | None
+    type: str  # income или expense
 
     @property
     def key(self) -> tuple[str, str]:
-        return self.title, self.company
+        # Уникальный ключ для дедупликации на основе кода и названия статьи
+        return self.code, self.name
