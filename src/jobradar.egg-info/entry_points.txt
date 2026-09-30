@@ -1,0 +1,2 @@
+[console_scripts]
+jobradar = jobradar.cli:main

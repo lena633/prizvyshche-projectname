@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/jobradar/__init__.py
+src/jobradar/cli.py
+src/jobradar.egg-info/PKG-INFO
+src/jobradar.egg-info/SOURCES.txt
+src/jobradar.egg-info/dependency_links.txt
+src/jobradar.egg-info/entry_points.txt
+src/jobradar.egg-info/requires.txt
+src/jobradar.egg-info/top_level.txt
+src/jobradar/domain/text.py
+tests/test_characterization.py
