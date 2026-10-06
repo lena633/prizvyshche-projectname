@@ -1,28 +1,29 @@
+from typing import Any
+
 from .models import BudgetRow
 
 
 def normalize_name(raw: str) -> str:
+    """Видаляє зайві пробіли всередині рядка та переводить у нижній регістр."""
     if not raw or not raw.strip():
         return ""
     return " ".join(raw.split()).lower()
 
 
-def parse_amount(raw: object) -> int | None:
+def to_budget_item(row: dict[str, Any]) -> BudgetRow | None:
+    """Конвертація сирого словника в об'єкт моделі Валідації."""
+    code = str(row.get("code", "")).strip()
+    if not code:
+        return None
+
+    name = str(row.get("name", "")).strip()
+
     try:
-        if isinstance(raw, str):
-            raw = raw.replace(" ", "")
-        return int(raw)
-    except (TypeError, ValueError):
+        return BudgetRow(
+            code=code,
+            name=normalize_name(name),
+            amount=str(row.get("amount", "")).strip(),
+            type=str(row.get("type", "")).strip(),
+        )
+    except (KeyError, ValueError, TypeError):
         return None
-
-
-def to_budget_item(row: dict) -> BudgetRow | None:
-    name = row.get("name") or ""
-    if not name.strip():
-        return None
-    return BudgetRow(
-        code=str(row.get("code", "")).strip(),
-        name=normalize_name(name),
-        amount=parse_amount(row.get("amount")),
-        type=row.get("type", ""),
-    )

@@ -5,10 +5,20 @@ from dataclasses import dataclass
 class BudgetRow:
     code: str
     name: str
-    amount: int | None
-    type: str  # income или expense
+    amount: str
+    type: str
 
     @property
     def key(self) -> tuple[str, str]:
-        # Уникальный ключ для дедупликации на основе кода и названия статьи
-        return self.code, self.name
+        # Очищаем от пробелов и приводим к нижнему регистру для стабильности тестов
+        return self.code.strip(), self.name.strip().lower()
+
+
+@dataclass(frozen=True)
+class Income:
+    income: str
+
+
+@dataclass(frozen=True)
+class Expenses:
+    expenses: str

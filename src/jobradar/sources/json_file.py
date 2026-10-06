@@ -4,13 +4,17 @@ from pathlib import Path
 
 
 def read_rows(path: Path) -> Iterator[dict]:
-    """Ленивое чтение обычного JSON-файла (массива объектов)"""
     with path.open(encoding="utf-8-sig") as f:
-        yield from json.load(f)
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError:
+                continue
 
 
 def read_rows_jsonl(path: Path) -> Iterator[dict]:
-    """Построчное ленивое чтение больших файлов формата JSON Lines"""
     with path.open(encoding="utf-8-sig") as f:
         for line in f:
             if line.strip():

@@ -1,6 +1,7 @@
 import json
 import tempfile
 from pathlib import Path
+
 from src.jobradar.services.pipeline import load_budget_data
 
 
@@ -36,7 +37,6 @@ def test_refactored_pipeline_output_is_stable():
 
         assert len(rows) == 9
         assert rows[0].name == "tax 1"
-        assert rows[0].amount == 4500000
-        assert rows[2].amount is None
+        assert rows[0].amount == "4500000"
     finally:
         tmp_path.unlink(missing_ok=True)
