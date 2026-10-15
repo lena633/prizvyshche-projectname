@@ -4,13 +4,12 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from itertools import islice
 from pathlib import Path
+from typing import Any
 
-# Относительные импорты внутри одного пакета
+from pydantic import ValidationError
+
 from ..domain.models import BudgetRow
-from ..domain.parsing import to_budget_item
-
-
-# === ИСПРАВЛЕННЫЕ ИМПОРТЫ (УБИРАЕМ ПРЕФИКС src) ===
+from ..sources.schemas import BudgetIn
 
 
 @dataclass(slots=True)
@@ -32,16 +31,14 @@ class PipelineStats:
         return self.amount_sum / self.amount_count
 
 
-def read_rows_jsonl(path: Path) -> Iterator[dict]:
-    """Ленивое чтение JSON Lines построчно."""
+def read_rows_jsonl(path: Path) -> Iterator[dict[str, Any]]:
     with path.open(encoding="utf-8-sig") as f:
         for line in f:
             if line.strip():
                 yield json.loads(line)
 
 
-def read_rows_normal_json(path: Path) -> Iterator[dict]:
-    """Ленивая выдача словарей из обычного JSON-массива (для тестов)."""
+def read_rows_normal_json(path: Path) -> Iterator[dict[str, Any]]:
     with path.open(encoding="utf-8-sig") as f:
         data = json.load(f)
         if isinstance(data, list):
@@ -50,18 +47,18 @@ def read_rows_normal_json(path: Path) -> Iterator[dict]:
             yield data
 
 
-def parse_all(rows: Iterable[dict], stats: PipelineStats) -> Iterator[BudgetRow]:
+def parse_all(rows: Iterable[dict[str, Any]], stats: PipelineStats) -> Iterator[BudgetRow]:
     for row in rows:
         stats.read += 1
-        budget = to_budget_item(row)
-        if budget is None:
+        try:
+            yield BudgetIn.model_validate(row).to_domain()
+        except ValidationError:
             stats.invalid += 1
             continue
-        yield budget
 
 
 def deduplicate(items: Iterable[BudgetRow], stats: PipelineStats) -> Iterator[BudgetRow]:
-    seen: set[tuple[str, str]] = set()
+    seen: set[tuple[str, str]] = set()  # Явная аннотация пустого множества для mypy
     for budget in items:
         if budget.key in seen:
             stats.duplicates += 1
@@ -70,20 +67,19 @@ def deduplicate(items: Iterable[BudgetRow], stats: PipelineStats) -> Iterator[Bu
         yield budget
 
 
-def collect(items: Iterable[BudgetRow], stats: PipelineStats) -> None:
+def collect(items: Iterable[BudgetRow], stats: PipelineStats) -> Iterator[BudgetRow]:
     for budget in items:
         stats.kept += 1
         stats.by_community[budget.code] += 1
-        try:
-            val = int(budget.amount)
-            stats.amount_count += 1
-            stats.amount_sum += val
-            if stats.amount_min is None or val < stats.amount_min:
-                stats.amount_min = val
-            if stats.amount_max is None or val > stats.amount_max:
-                stats.amount_max = val
-        except ValueError:
-            pass
+        
+        val = budget.amount
+        stats.amount_count += 1
+        stats.amount_sum += val
+        if stats.amount_min is None or val < stats.amount_min:
+            stats.amount_min = val
+        if stats.amount_max is None or val > stats.amount_max:
+            stats.amount_max = val
+        yield budget
 
 
 def batched(items: Iterable[BudgetRow], size: int) -> Iterator[tuple[BudgetRow, ...]]:
@@ -93,12 +89,10 @@ def batched(items: Iterable[BudgetRow], size: int) -> Iterator[tuple[BudgetRow, 
 
 
 def count_by_type(items: Iterable[BudgetRow]) -> Counter[str]:
-    """Рахує скільки у нас статей дохідних (income) та видаткових (expense)."""
     return Counter(item.type for item in items)
 
 
 def load_budget_data(path: Path) -> list[BudgetRow]:
-    """Совместимая ленивая функция для интеграционных тестов."""
     stats = PipelineStats()
     if path.suffix == ".jsonl":
         rows = read_rows_jsonl(path)
@@ -107,4 +101,5 @@ def load_budget_data(path: Path) -> list[BudgetRow]:
 
     parsed_items = parse_all(rows, stats)
     unique_items = deduplicate(parsed_items, stats)
-    return list(unique_items)
+    monitored_items = collect(unique_items, stats)
+    return list(monitored_items)

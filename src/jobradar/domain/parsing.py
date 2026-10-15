@@ -22,7 +22,7 @@ def to_budget_item(row: dict[str, Any]) -> BudgetRow | None:
         return BudgetRow(
             code=code,
             name=normalize_name(name),
-            amount=str(row.get("amount", "")).strip(),
+            amount=int(float(str(row.get("amount", "0")).strip())),
             type=str(row.get("type", "")).strip(),
         )
     except (KeyError, ValueError, TypeError):

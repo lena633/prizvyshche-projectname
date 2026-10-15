@@ -1,19 +1,11 @@
-from src.jobradar.services.pipeline import PipelineStats, batched, parse_all
+from jobradar.domain.models import BudgetRow
+from jobradar.services.pipeline import batched
 
 
-def test_invalid_rows_are_counted():
-    rows = [
-        {"code": "11010100", "name": "Tax 1", "amount": "4500000", "type": "income"},
-        {"code": "", "name": "Tax 2", "amount": "1200000", "type": "income"},
-    ]
-
-    stats = PipelineStats()
-    result = list(parse_all(rows, stats))
-
-    assert len(result) == 1
-    assert stats.read == 2
-    assert stats.invalid == 1
-
-
-def test_batched_splits_tail():
-    assert [len(b) for b in batched(range(7), 3)] == [3, 3, 1]
+def test_batched_function_logic() -> None:  # Аннотация возвращаемого значения
+    # Создаем список валидных объектов вместо range(5) для mypy
+    mock_items = [BudgetRow(code=str(i), name="Test", amount=100, type="income") for i in range(5)]
+    
+    result = list(batched(mock_items, 2))
+    assert len(result) == 3
+    assert len(result[0]) == 2

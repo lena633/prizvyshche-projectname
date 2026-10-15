@@ -1,24 +1,26 @@
 from dataclasses import dataclass
 
+LARGE_ROW_THRESHOLD = 3000
 
 @dataclass(frozen=True, slots=True)
 class BudgetRow:
     code: str
     name: str
-    amount: str
+    amount: int  # Сумма строго int
     type: str
+
+    def __post_init__(self) -> None:
+        if not self.code.strip():
+            raise ValueError('code must not be empty')
+        if not self.name.strip():
+            raise ValueError('name must not be empty')
+        if self.amount <= 0:
+            raise ValueError('amount must be positive')
 
     @property
     def key(self) -> tuple[str, str]:
-        # Очищаем от пробелов и приводим к нижнему регистру для стабильности тестов
         return self.code.strip(), self.name.strip().lower()
 
-
-@dataclass(frozen=True)
-class Income:
-    income: str
-
-
-@dataclass(frozen=True)
-class Expenses:
-    expenses: str
+    @property
+    def is_large_level_transaction(self) -> bool:
+        return self.amount >= LARGE_ROW_THRESHOLD

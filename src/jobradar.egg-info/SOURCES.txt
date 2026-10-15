@@ -11,6 +11,9 @@ src/jobradar.egg-info/top_level.txt
 src/jobradar/domain/models.py
 src/jobradar/domain/parsing.py
 src/jobradar/domain/text.py
+src/jobradar/services/__init__.py
 src/jobradar/services/pipeline.py
+src/jobradar/sources/__init__.py
 src/jobradar/sources/json_file.py
 tests/test_characterization.py
+tests/test_pipeline.py
