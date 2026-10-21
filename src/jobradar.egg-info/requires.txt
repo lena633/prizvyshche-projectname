@@ -1,5 +1,6 @@
+pydantic
+pydantic-settings
 
 [dev]
-ruff
+mypy
 pytest
-pre-commit

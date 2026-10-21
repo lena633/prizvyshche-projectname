@@ -11,9 +11,9 @@ class BudgetIn(BaseModel):
     code: str = Field(min_length=1, max_length=200)
     name: str = Field(min_length=1)
     amount: int = Field(gt=0)
-    type: str = Field(default='', alias='location')
+    type: str = Field(default="", alias="location")
 
-    @field_validator('amount', mode='before')
+    @field_validator("amount", mode="before")
     @classmethod
     def unknown_amount(cls, value: Any) -> Any:
         if isinstance(value, str):
@@ -36,8 +36,5 @@ class BudgetIn(BaseModel):
 
     def to_domain(self) -> BudgetRow:
         return BudgetRow(
-            code=self.code,
-            name=self.name,
-            amount=self.amount,
-            type=self.type
+            code=self.code, name=self.name, amount=self.amount, type=self.type
         )
