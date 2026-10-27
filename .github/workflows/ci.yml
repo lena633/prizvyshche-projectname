@@ -24,7 +24,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install ruff mypy pytest pydantic pydantic-settings import-linter
-        pip install -e .
+        pip install .  # Устанавливаем проект как полноценный пакет в систему
 
     - name: Run Linters and Tests
       env:
@@ -35,6 +35,6 @@ jobs:
         pytest -q
 
     - name: Architecture contracts
-      run: |
-        cd src
-        lint-imports --config ../pyproject.toml
+      env:
+        PYTHONPATH: src  # Передаем корень исходников линтеру импортов
+      run: lint-imports

@@ -1,7 +1,6 @@
 [tool.importlinter]
-package-mode = false
 root_package = "jobradar"
-sys_path_dir = "src"  
+sys_path_dir = "src"
 
 [[tool.importlinter.contracts]]
 name = "Domain is independent"
@@ -14,5 +13,3 @@ name = "Services do not know adapters"
 type = "forbidden"
 source_modules = ["jobradar.services"]
 forbidden_modules = ["jobradar.sources", "jobradar.cli"]
-
-
