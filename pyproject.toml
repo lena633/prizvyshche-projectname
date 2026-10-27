@@ -1,7 +1,17 @@
-[tool.mypy]
-python_version = "3.14"
-strict = true
-show_error_codes = true
-warn_unused_ignores = true
-explicit_package_bases = true
-namespace_packages = true
+[tool.importlinter]
+root_package = "jobradar"
+sys_path_dir = "src"  
+
+[[tool.importlinter.contracts]]
+name = "Domain is independent"
+type = "forbidden"
+source_modules = ["jobradar.domain"]
+forbidden_modules = ["jobradar.services", "jobradar.sources", "jobradar.cli"]
+
+[[tool.importlinter.contracts]]
+name = "Services do not know adapters"
+type = "forbidden"
+source_modules = ["jobradar.services"]
+forbidden_modules = ["jobradar.sources", "jobradar.cli"]
+
+
