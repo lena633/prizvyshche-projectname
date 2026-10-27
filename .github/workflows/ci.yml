@@ -35,9 +35,6 @@ jobs:
         pytest -q
 
     - name: Architecture contracts
-      env:
-        PYTHONPATH: src  # Явно передаем путь к исходникам для Linux-окружения
       run: |
-        echo "=== Текущая директория ===" && pwd
-        echo "=== Содержимое папки src ===" && ls -la src/
-        lint-imports
+        cd src
+        lint-imports --config ../pyproject.toml
