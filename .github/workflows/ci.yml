@@ -24,16 +24,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install ruff mypy pytest pydantic pydantic-settings import-linter
+        pip install -e .  # ЭТА СТРОКА РЕГИСТРИРУЕТ ВАШ ПАКЕТ В СИСТЕМЕ LINUX
 
     - name: Run Linters and Tests
-      env:
-        PYTHONPATH: src  # ЭТО ОПРЕДЕЛЯЕТ ПУТИ ДЛЯ PYTEST
       run: |
         ruff check .
         mypy src tests
         pytest -q
 
     - name: Architecture contracts
-      env:
-        PYTHONPATH: src  # ЭТО ОПРЕДЕЛЯЕТ ПУТИ ДЛЯ IMPORT-LINTER
       run: lint-imports
