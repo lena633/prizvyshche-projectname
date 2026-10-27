@@ -23,10 +23,8 @@ jobs:
     - name: Install Linting & Testing Tools
       run: |
         python -m pip install --upgrade pip
-        pip install ruff mypy pytest pydantic import-linter
-        # Если у вас есть сторонние библиотеки (например, если импортируете что-то в src), 
-        # вы можете раскомментировать строку ниже:
-        # pip install -e .
+        pip install ruff mypy pytest pydantic pydantic-settings import-linter
+
 
     - name: Run Linters and Tests
       run: |
