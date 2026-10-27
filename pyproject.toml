@@ -1,4 +1,5 @@
 [tool.importlinter]
+package-mode = false
 root_package = "jobradar"
 sys_path_dir = "src"  
 
