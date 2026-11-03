@@ -1,13 +1,16 @@
+import logging
 from collections import Counter
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 
 from pydantic import ValidationError
 
-from ..domain.models import BudgetRow
-from .ports import Sourse
-from .schemas import BudgetIn
+from ..domain.models import BudgetRow  
+from .ports import Source
+from .schemas import BudgetIn         
 
+# Создаем логер для текущего модуля
+logger = logging.getLogger(__name__)
 
 @dataclass(slots=True)
 class PipelineStats:
@@ -16,6 +19,7 @@ class PipelineStats:
     duplicates: int = 0
     kept: int = 0
     by_community: Counter[str] = field(default_factory=Counter)
+    by_source: Counter[str] = field(default_factory=Counter)  
     amount_count: int = 0
     amount_sum: int = 0
     amount_min: int | None = None
@@ -27,19 +31,21 @@ class PipelineStats:
             return None
         return self.amount_sum / self.amount_count
 
-
 class Pipeline:
-    def __init__(self, sources: list[Sourse]) -> None:
+    def __init__(self, sources: list[Source]) -> None:  
         self._sources = sources
 
     def run(self) -> PipelineStats:
         stats = PipelineStats()
-        # ИСПРАВЛЕНО ДЛЯ mypy: Здесь должен быть набор КОРТЕЖЕЙ, так как budget.key — это tuple
         seen: set[tuple[str, str]] = set()
+
+        # Логируем старт обработки (уровень INFO)
+        logger.info("start processing %d source(s)", len(self._sources))
 
         for source in self._sources:
             for budget in self._parse(source, stats):
-                # Проверка дубликатов по кортежу ключа
+                stats.by_source[source.name] += 1
+
                 if budget.key in seen:
                     stats.duplicates += 1
                     continue
@@ -47,15 +53,12 @@ class Pipeline:
                 seen.add(budget.key)
                 stats.kept += 1
 
-                # Выделение чистого имени громады из кода
                 if "-" in budget.code:
-                    # ИСПРАВЛЕНО: берем [0] элемент сплита, чтобы получить строку str, а не список list
                     community_name = budget.code.split("-")[0]
                 else:
                     community_name = budget.code
                 stats.by_community[community_name] += 1
 
-                # Финансовый блок расчета показателей
                 try:
                     val = int(budget.amount)
                     stats.amount_count += 1
@@ -65,17 +68,27 @@ class Pipeline:
                         stats.amount_min = val
                     if stats.amount_max is None or val > stats.amount_max:
                         stats.amount_max = val
-                except ValueError:
+                except (ValueError, TypeError, AttributeError):
                     pass
+
+        # Логируем завершение работы (уровень INFO)
+        logger.info("done: kept %d, invalid %d, duplicates %d",
+                    stats.kept, stats.invalid, stats.duplicates)
+        
+        # Если есть невалидные строки, выводим предупреждение (уровень WARNING)
+        if stats.invalid:
+            logger.warning("skipped %d invalid rows", stats.invalid)
 
         return stats
 
     @staticmethod
-    def _parse(source: Sourse, stats: PipelineStats) -> Iterator[BudgetRow]:
+    def _parse(source: Source, stats: PipelineStats) -> Iterator[BudgetRow]:  
         for row in source.read():
             stats.read += 1
             try:
-                yield BudgetIn.model_validate(row).to_domain()
-            except ValidationError:
+                yield BudgetIn.model_validate(row).to_domain()  
+            except ValidationError as exc:
                 stats.invalid += 1
+                # Логируем ошибку валидации строки (уровень DEBUG)
+                logger.debug("skip row: %d validation errors", exc.error_count())
                 continue
