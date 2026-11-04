@@ -1,16 +1,15 @@
-[project]
-name = "jobradar"
-version = "0.1.0"
-description = "Збір і аналіз вакансій"
-requires-python = ">=3.12"
-dependencies = []
-[project.optional-dependencies]
-dev = ["ruff", "pytest", "pre-commit"]
-[project.scripts]
-jobradar = "jobradar.cli:main"
-[build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
-[tool.ruff]
-line-length = 100
-target-version = "py312"
+[tool.importlinter]
+root_package = "jobradar"
+sys_path_dir = "src"
+
+[[tool.importlinter.contracts]]
+name = "Domain is independent"
+type = "forbidden"
+source_modules = ["jobradar.domain"]
+forbidden_modules = ["jobradar.services", "jobradar.sources", "jobradar.cli"]
+
+[[tool.importlinter.contracts]]
+name = "Services do not know adapters"
+type = "forbidden"
+source_modules = ["jobradar.services"]
+forbidden_modules = ["jobradar.sources", "jobradar.cli"]
