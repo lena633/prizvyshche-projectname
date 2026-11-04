@@ -3,13 +3,13 @@ import logging
 from collections.abc import Callable
 from pathlib import Path
 
-from .confing import Settings
+from .config import Settings
 from .errors import JobRadarError, SourceError
 from .logging_setup import setup
 from .services.pipeline import Pipeline, PipelineStats
 from .services.ports import Sourse
 from .sources.csv_file import CsvSource
-from .sources.jsonl import JsonlSource
+from .sources.json_file import JsonlSource
 
 logger = logging.getLogger(__name__)
 

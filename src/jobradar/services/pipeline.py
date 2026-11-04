@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 
 from pydantic import ValidationError
 
-from ..domain.models import BudgetRow  
-from .ports import Source
-from .schemas import BudgetIn         
+from ..domain.models import BudgetRow
+from .ports import Sourse
+from .schemas import BudgetIn
 
 # Создаем логер для текущего модуля
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class PipelineStats:
         return self.amount_sum / self.amount_count
 
 class Pipeline:
-    def __init__(self, sources: list[Source]) -> None:  
+    def __init__(self, sources: list[Sourse]) -> None:  
         self._sources = sources
 
     def run(self) -> PipelineStats:
@@ -82,7 +82,7 @@ class Pipeline:
         return stats
 
     @staticmethod
-    def _parse(source: Source, stats: PipelineStats) -> Iterator[BudgetRow]:  
+    def _parse(source: Sourse, stats: PipelineStats) -> Iterator[BudgetRow]:  
         for row in source.read():
             stats.read += 1
             try:

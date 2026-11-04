@@ -7,11 +7,11 @@ from typing import Any
 class CsvSource:
     name = "csv"
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, delimiter: str = ";") -> None:
         self._path = path
+        self._delimiter = delimiter
 
     def read(self) -> Iterator[dict[str, Any]]:
         with self._path.open(encoding="utf-8", newline="") as f:
-            reader = csv.DictReader(f)
-            # ИСПРАВЛЕНО ДЛЯ ruff: Используем лаконичный yield from
-            yield from reader
+            # Используем yield from и передаем delimiter, чтобы ruff и логика были довольны
+            yield from csv.DictReader(f, delimiter=self._delimiter)
