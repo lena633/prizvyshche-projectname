@@ -1,5 +1,4 @@
-def normalize_name(raw: str | None) -> str:
- 
+def normalize_name(raw: str | None) -> str: 
     if not raw or not raw.strip():
         return ""
 
