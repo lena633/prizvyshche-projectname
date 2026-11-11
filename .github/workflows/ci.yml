@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, refactor/layers ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Linting & Testing Tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff mypy pytest pydantic pydantic-settings import-linter
+        pip install .  # Устанавливаем проект как полноценный пакет в систему
+
+    - name: Run Linters and Tests
+      env:
+        PYTHONPATH: src
+      run: |
+        ruff check .
+        mypy src tests
+        pytest -q
+
+    - name: Architecture contracts
+      env:
+        PYTHONPATH: src  # Передаем корень исходников линтеру импортов
+      run: lint-imports
