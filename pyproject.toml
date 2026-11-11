@@ -17,7 +17,7 @@ forbidden_modules = ["jobradar.sources", "jobradar.cli"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q --cov=src/jobradar --cov-report=term-missing --cov-fail-under=70"
+addopts = "-q --cov=jobradar --cov-report=term-missing --cov-fail-under=70"
 
 [tool.coverage.run]
 omit = [
