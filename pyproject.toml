@@ -20,6 +20,7 @@ pythonpath = ["."]
 addopts = "-q --cov=jobradar --cov-report=term-missing --cov-fail-under=70"
 
 [tool.coverage.run]
+source = ["src"]
 omit = [
     "src/jobradar/__main__.py",
     "src/jobradar/domain/parsing.py",
