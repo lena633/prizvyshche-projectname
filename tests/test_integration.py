@@ -33,3 +33,25 @@ def test_missing_file_exits_with_code_1(
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 1
+
+
+from pathlib import Path
+
+import pytest
+
+
+def test_flag_beats_environment(
+    jsonl_file: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Крок 6: Пріоритет: аргумент командного рядка > змінна середовища."""
+    levels: list[str] = []
+
+    # Подменяем функцию настройки логов, чтобы перехватить переданный уровень
+    monkeypatch.setattr("jobradar.cli.setup", levels.append)
+    monkeypatch.setenv("LOG_LEVEL", "ERROR")
+    monkeypatch.setattr(
+        "sys.argv", ["jobradar", str(jsonl_file), "--log-level", "DEBUG"]
+    )
+
+    main()
+    assert levels == ["DEBUG"]
