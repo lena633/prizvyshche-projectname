@@ -68,7 +68,9 @@ def parse_all(rows: Iterable[dict], stats: PipelineStats) -> Iterator[BudgetRow]
         yield budget
 
 
-def deduplicate(items: Iterable[BudgetRow], stats: PipelineStats) -> Iterator[BudgetRow]:
+def deduplicate(
+    items: Iterable[BudgetRow], stats: PipelineStats
+) -> Iterator[BudgetRow]:
     seen = set()
     for budget in items:
         if budget.key in seen:

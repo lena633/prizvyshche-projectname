@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 LARGE_ROW_THRESHOLD = 3000
 
+
 @dataclass(frozen=True, slots=True)
 class BudgetRow:
     code: str
@@ -11,11 +12,11 @@ class BudgetRow:
 
     def __post_init__(self) -> None:
         if not self.code.strip():
-            raise ValueError('code must not be empty')
+            raise ValueError("code must not be empty")
         if not self.name.strip():
-            raise ValueError('name must not be empty')
+            raise ValueError("name must not be empty")
         if self.amount <= 0:
-            raise ValueError('amount must be positive')
+            raise ValueError("amount must be positive")
 
     @property
     def key(self) -> tuple[str, str]:

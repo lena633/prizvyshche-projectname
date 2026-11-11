@@ -12,6 +12,7 @@ from .schemas import BudgetIn
 # Создаем логер для текущего модуля
 logger = logging.getLogger(__name__)
 
+
 @dataclass(slots=True)
 class PipelineStats:
     read: int = 0
@@ -19,7 +20,7 @@ class PipelineStats:
     duplicates: int = 0
     kept: int = 0
     by_community: Counter[str] = field(default_factory=Counter)
-    by_source: Counter[str] = field(default_factory=Counter)  
+    by_source: Counter[str] = field(default_factory=Counter)
     amount_count: int = 0
     amount_sum: int = 0
     amount_min: int | None = None
@@ -31,8 +32,9 @@ class PipelineStats:
             return None
         return self.amount_sum / self.amount_count
 
+
 class Pipeline:
-    def __init__(self, sources: list[Sourse]) -> None:  
+    def __init__(self, sources: list[Sourse]) -> None:
         self._sources = sources
 
     def run(self) -> PipelineStats:
@@ -72,9 +74,13 @@ class Pipeline:
                     pass
 
         # Логируем завершение работы (уровень INFO)
-        logger.info("done: kept %d, invalid %d, duplicates %d",
-                    stats.kept, stats.invalid, stats.duplicates)
-        
+        logger.info(
+            "done: kept %d, invalid %d, duplicates %d",
+            stats.kept,
+            stats.invalid,
+            stats.duplicates,
+        )
+
         # Если есть невалидные строки, выводим предупреждение (уровень WARNING)
         if stats.invalid:
             logger.warning("skipped %d invalid rows", stats.invalid)
@@ -82,11 +88,11 @@ class Pipeline:
         return stats
 
     @staticmethod
-    def _parse(source: Sourse, stats: PipelineStats) -> Iterator[BudgetRow]:  
+    def _parse(source: Sourse, stats: PipelineStats) -> Iterator[BudgetRow]:
         for row in source.read():
             stats.read += 1
             try:
-                yield BudgetIn.model_validate(row).to_domain()  
+                yield BudgetIn.model_validate(row).to_domain()
             except ValidationError as exc:
                 stats.invalid += 1
                 # Логируем ошибку валидации строки (уровень DEBUG)

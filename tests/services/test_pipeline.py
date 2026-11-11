@@ -6,6 +6,7 @@ from jobradar.services.pipeline import Pipeline
 # Выносим эталонную строку наружу, чтобы её видел test_logging.py
 ROW = {"code": "київська-1", "name": "Транзакція 1", "amount": "1000"}
 
+
 # 1. Создаем поддельный источник данных (Fake/Mock) специально для тестов
 class FakeSource:
     name = "fake_source"
@@ -15,6 +16,7 @@ class FakeSource:
 
     def read(self) -> Iterator[dict[str, Any]]:
         yield from self._raw_data
+
 
 # 2. Тест №1: Проверяем базовый подсчет и фильтрацию дубликатов
 def test_pipeline_calculates_correct_stats_and_removes_duplicates() -> None:
@@ -37,11 +39,12 @@ def test_pipeline_calculates_correct_stats_and_removes_duplicates() -> None:
     assert stats.amount_sum == 9000
     assert stats.amount_avg == 3000.0
 
+
 # 3. Тест №2: Проверяем реакцию конвейера на поврежденные/невалидные данные
 def test_pipeline_handles_invalid_data_gracefully() -> None:
     mock_rows = [
         ROW,
-        {"code": "", "name": "Пошкоджена (нет кода)", "amount": "2000"},  
+        {"code": "", "name": "Пошкоджена (нет кода)", "amount": "2000"},
         {"code": "одеська-2", "name": "Не валідна сума", "amount": "not-a-number"},
     ]
 

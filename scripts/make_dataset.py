@@ -6,7 +6,13 @@ random.seed(7)
 
 # Зачем: Это заготовки (справочники) для наполнения полей.
 # Из них Python будет случайным образом собирать строки бюджета.
-communities = ["Київська ТГ", "Львівська ТГ", "Одеська ТГ", "Харківська ТГ", "Дніпровська ТГ"]
+communities = [
+    "Київська ТГ",
+    "Львівська ТГ",
+    "Одеська ТГ",
+    "Харківська ТГ",
+    "Дніпровська ТГ",
+]
 budget_articles = ["Заробітна плата вчителів", "Ремонт доріг та інфраструктури", ...]
 budget_types = ["income", "expense"]
 
@@ -22,12 +28,12 @@ with path.open("w", encoding="utf-8") as f:
 
         else:
             row = {
-                
                 "code": f"{random.choice(communities)}-{i}",
                 # Название статьи: берем из списка + делаем 4000 уникальных вариаций
-                "name": f"{random.choice(budget_articles)} {i%4000}",
-               
-                "amount": str(random.randint(500, 5000)) if i % 7 else "за домовленістю",
+                "name": f"{random.choice(budget_articles)} {i % 4000}",
+                "amount": str(random.randint(500, 5000))
+                if i % 7
+                else "за домовленістю",
                 # Направление: случайно выбираем доход это или расход
                 "type": random.choice(budget_types),
             }
@@ -37,7 +43,6 @@ with path.open("w", encoding="utf-8") as f:
             if i % 1000 == 0:
                 row = dict(row, code="")
 
-       
         prev = row
 
         #  Превращаем Python-словарь в текстовую строку формата JSON и записываем её в файл с новой строки (\n).
