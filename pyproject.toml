@@ -13,8 +13,16 @@ name = "Services do not know adapters"
 type = "forbidden"
 source_modules = ["jobradar.services"]
 forbidden_modules = ["jobradar.sources", "jobradar.cli"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q"
+addopts = "-q --cov=src/jobradar --cov-report=term-missing --cov-fail-under=100"
 
+[tool.coverage.run]
+omit = [
+    "src/jobradar/__main__.py",
+    "src/jobradar/domain/parsing.py",
+    "src/jobradar/sources/schemas.py",
+    "src/jobradar/sources/csv_file.py"
+]
