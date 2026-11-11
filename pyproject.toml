@@ -13,3 +13,8 @@ name = "Services do not know adapters"
 type = "forbidden"
 source_modules = ["jobradar.services"]
 forbidden_modules = ["jobradar.sources", "jobradar.cli"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
