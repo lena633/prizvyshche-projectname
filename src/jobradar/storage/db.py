@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -39,17 +39,19 @@ def make_session_factory(engine: Engine) -> sessionmaker[Session]:
 
 
 @contextmanager
-def session_scope(session_factory: sessionmaker[Session]) -> Iterator[Session]:
-    """Контекстний менеджер транзакції з автоматичним commit/rollback."""
+def session_scope(
+    session_factory: sessionmaker[Session],
+) -> Generator[Session, None, None]:
+    """Контекстний менеджер транзакції з автоматичним commit або rollback."""
     session = session_factory()
     try:
         yield session
         session.commit()
-    except SQLAlchemyError as exc:
-        session.rollback()
-        raise StorageError(f"Помилка транзакції бази даних: {exc}") from exc
-    except Exception:
+    except StorageError:
         session.rollback()
         raise
+    except Exception as exc:
+        session.rollback()
+        raise StorageError(f"transaction failed: {exc}") from exc
     finally:
         session.close()

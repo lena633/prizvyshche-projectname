@@ -10,6 +10,9 @@ from .services.pipeline import Pipeline, PipelineStats
 from .services.ports import Sourse
 from .sources.csv_file import CsvSource
 from .sources.json_file import JsonlSource
+from .storage.db import make_engine, make_session_factory, session_scope
+from .storage.models import Base
+from .storage.repository import SqlBudgetRepository
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +41,22 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="перекриває значення з .env і змінних середовища",
     )
+    parser.add_argument(
+        "--db",
+        type=Path,
+        default=None,
+        help="шлях до файлу бази даних SQLite для збереження результатів",
+    )
     return parser
+
+
+def run_with_storage(sources: list[Sourse], db_path: Path) -> PipelineStats:
+    """Створює схему, якщо її немає, і пише потік бюджетних записів у базу."""
+    engine = make_engine(db_path)
+    Base.metadata.create_all(engine)
+    factory = make_session_factory(engine)
+    with session_scope(factory) as session:
+        return Pipeline(sources).run_into(SqlBudgetRepository(session))
 
 
 def main() -> None:
@@ -50,7 +68,10 @@ def main() -> None:
 
     try:
         sources = [build_source(path) for path in args.paths]
-        stats: PipelineStats = Pipeline(sources).run()
+        if args.db is not None:
+            stats = run_with_storage(sources, args.db)
+        else:
+            stats = Pipeline(sources).run()
     except JobRadarError as exc:
         # Логируем только понятное сообщение без страшного Traceback для пользователя
         logger.error("%s", exc)
@@ -61,6 +82,8 @@ def main() -> None:
     print(f"Відхилено: {stats.invalid}")
     print(f"Дублікатів: {stats.duplicates}")
     print(f"Залишилось: {stats.kept}")
+    if args.db is not None:
+        print(f"Записано в базу: {stats.written}")
     print("-" * 40)
     print(
         f"Сума видатків: min={stats.amount_min} max={stats.amount_max} avg={stats.amount_avg}"

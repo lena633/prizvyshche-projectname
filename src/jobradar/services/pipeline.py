@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pydantic import ValidationError
 
 from ..domain.models import BudgetRow
-from .ports import Sourse
+from .ports import BudgetRepository, Sourse
 from .schemas import BudgetIn
 
 # Создаем логер для текущего модуля
@@ -19,6 +19,7 @@ class PipelineStats:
     invalid: int = 0
     duplicates: int = 0
     kept: int = 0
+    written: int = 0
     by_community: Counter[str] = field(default_factory=Counter)
     by_source: Counter[str] = field(default_factory=Counter)
     amount_count: int = 0
@@ -39,6 +40,17 @@ class Pipeline:
 
     def run(self) -> PipelineStats:
         stats = PipelineStats()
+        for _ in self._iter_valid(stats):
+            pass
+        return stats
+
+    def run_into(self, repository: BudgetRepository) -> PipelineStats:
+        """Веде лінивий потік записів одразу у сховище."""
+        stats = PipelineStats()
+        stats.written = repository.add_many(self._iter_valid(stats))
+        return stats
+
+    def _iter_valid(self, stats: PipelineStats) -> Iterator[BudgetRow]:
         seen: set[tuple[str, str]] = set()
 
         # Логируем старт обработки (уровень INFO)
@@ -73,6 +85,8 @@ class Pipeline:
                 except (ValueError, TypeError, AttributeError):
                     pass
 
+                yield budget
+
         # Логируем завершение работы (уровень INFO)
         logger.info(
             "done: kept %d, invalid %d, duplicates %d",
@@ -84,8 +98,6 @@ class Pipeline:
         # Если есть невалидные строки, выводим предупреждение (уровень WARNING)
         if stats.invalid:
             logger.warning("skipped %d invalid rows", stats.invalid)
-
-        return stats
 
     @staticmethod
     def _parse(source: Sourse, stats: PipelineStats) -> Iterator[BudgetRow]:
