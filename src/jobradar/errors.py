@@ -15,3 +15,7 @@ class ParseError(SourceError):
 
 class ConfigError(JobRadarError):
     """Некоректна конфігурація застосунку."""
+
+
+class StorageError(JobRadarError):
+    """Проблема зі сховищем: підключення, схема, транзакція."""
